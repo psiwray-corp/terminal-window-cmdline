@@ -1,0 +1,92 @@
+# Adapted from libvterm t/12state_scroll.test (MIT, see LICENSE beside this file).
+# DECSLRM, DECRQSS, and low-level move/erase emulation are removed. The grid
+# content and cursor are checked instead.
+INIT
+UTF8 1
+WANTSTATE s
+
+!Linefeed scroll
+RESET
+PUSH "\e[2;1HA\e[3;1HB\e[4;1HC"
+  ?row 1 = "A"
+  ?row 2 = "B"
+  ?row 3 = "C"
+PUSH "\e[25;1H\n"
+  ?row 0 = "A"
+  ?row 1 = "B"
+  ?row 2 = "C"
+  ?row 24 = ""
+  ?cursor = 24,0
+
+!Index
+RESET
+PUSH "\e[25H"
+  ?cursor = 24,0
+PUSH "\eD"
+  ?cursor = 24,0
+
+!Reverse Index
+RESET
+PUSH "\e[2;1HA\e[3;1HB"
+PUSH "\e[H\eM"
+  ?row 1 = ""
+  ?row 2 = "A"
+  ?row 3 = "B"
+
+!Linefeed in DECSTBM
+RESET
+PUSH "\e[2;4r"
+  ?cursor = 0,0
+PUSH "\e[2;1HA\e[3;1HB\e[4;1HC\e[5;1HD"
+  ?row 4 = "D"
+PUSH "\e[4;1H\n"
+  ?row 1 = "B"
+  ?row 2 = "C"
+  ?row 3 = ""
+  ?row 4 = "D"
+  ?cursor = 3,0
+
+!Linefeed outside DECSTBM
+PUSH "\e[20H\n"
+  ?cursor = 20,0
+
+!Reverse Index in DECSTBM
+PUSH "\e[3;1H\eM"
+  ?cursor = 1,0
+
+!SD/SU in DECSTBM
+RESET
+PUSH "\e[2;1HA\e[3;1HB\e[4;1HC"
+PUSH "\e[2;4r"
+PUSH "\e[S"
+  ?row 1 = "B"
+  ?row 2 = "C"
+  ?row 3 = ""
+PUSH "\e[T"
+  ?row 1 = ""
+  ?row 2 = "B"
+  ?row 3 = "C"
+
+!Origin mode
+RESET
+PUSH "\e[3;5r\e[?6h"
+  ?cursor = 2,0
+PUSH "\e[1;1H"
+  ?cursor = 2,0
+PUSH "\e[99;99H"
+  ?cursor = 4,79
+PUSH "\e[?6l"
+  ?cursor = 0,0
+
+!DECSTBM resets cursor position
+PUSH "\e[5;5H"
+  ?cursor = 4,4
+PUSH "\e[r"
+  ?cursor = 0,0
+
+!Invalid boundaries are ignored
+RESET
+PUSH "\e[100;105r\eD"
+  ?cursor = 1,0
+PUSH "\e[5;2r\eD"
+  ?cursor = 2,0

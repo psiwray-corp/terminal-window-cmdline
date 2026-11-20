@@ -1,0 +1,119 @@
+# Adapted from libvterm t/13state_edit.test (MIT, see LICENSE beside this file).
+# DECSLRM, DECIC/DECDC, selective erase, DECRQSS, and low-level move/erase
+# expectations are removed. The grid content and cursor are checked instead.
+INIT
+UTF8 1
+WANTSTATE seb
+
+!ICH
+RESET
+PUSH "ACD"
+PUSH "\e[2D"
+  ?cursor = 0,1
+PUSH "\e[@"
+  ?row 0 = "A CD"
+PUSH "B"
+  ?row 0 = "ABCD"
+PUSH "\e[3@"
+  ?row 0 = "AB   CD"
+
+!DCH
+RESET
+PUSH "ABBC"
+PUSH "\e[3D"
+  ?cursor = 0,1
+PUSH "\e[P"
+  ?row 0 = "ABC"
+PUSH "\e[3P"
+  ?row 0 = "A"
+
+!ECH
+RESET
+PUSH "ABC"
+PUSH "\e[2D"
+PUSH "\e[1X"
+  ?row 0 = "A C"
+PUSH "\e[3X"
+  ?row 0 = "A"
+
+!IL
+RESET
+PUSH "A\r\nC"
+  ?row 0 = "A"
+  ?row 1 = "C"
+PUSH "\e[L"
+  ?row 1 = ""
+  ?row 2 = "C"
+  ?cursor = 1,1
+PUSH "\rB"
+  ?row 1 = "B"
+PUSH "\e[3L"
+  ?row 1 = ""
+  ?row 2 = ""
+  ?row 3 = ""
+  ?row 4 = "B"
+  ?row 5 = "C"
+
+!DL
+RESET
+PUSH "A\r\nB\r\nB\r\nC"
+  ?row 0 = "A"
+  ?row 1 = "B"
+  ?row 2 = "B"
+  ?row 3 = "C"
+PUSH "\e[2H"
+PUSH "\e[M"
+  ?row 1 = "B"
+  ?row 2 = "C"
+  ?row 3 = ""
+PUSH "\e[3M"
+  ?row 1 = ""
+  ?row 2 = ""
+  ?row 3 = ""
+
+!EL 0
+RESET
+PUSH "ABCDE"
+PUSH "\e[3D"
+  ?cursor = 0,2
+PUSH "\e[0K"
+  ?row 0 = "AB"
+
+!EL 1
+RESET
+PUSH "ABCDE"
+PUSH "\e[3D"
+PUSH "\e[1K"
+  ?row 0 = "   DE"
+
+!EL 2
+RESET
+PUSH "ABCDE"
+PUSH "\e[3D"
+PUSH "\e[2K"
+  ?row 0 = ""
+
+!ED 0
+RESET
+PUSH "A\r\nB\r\nC"
+PUSH "\e[2;2H"
+  ?cursor = 1,1
+PUSH "\e[0J"
+  ?row 0 = "A"
+  ?row 1 = "B"
+  ?row 2 = ""
+
+!ED 1
+RESET
+PUSH "A\r\nB\r\nC"
+PUSH "\e[2;2H"
+PUSH "\e[1J"
+  ?row 0 = ""
+  ?row 1 = ""
+  ?row 2 = "C"
+
+!ED 2
+RESET
+PUSH "A"
+PUSH "\e[2J"
+  ?row 0 = ""

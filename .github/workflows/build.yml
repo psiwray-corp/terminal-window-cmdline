@@ -1,0 +1,135 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build (${{ matrix.os }})
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build and verify
+        shell: bash
+        run: bash ci/build.sh
+
+      - name: Upload application distribution
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v7
+        with:
+          name: terminal-window-cmdline-${{ matrix.os }}
+          path: app/build/distributions/
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-reports-${{ matrix.os }}
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          retention-days: 7
+          if-no-files-found: ignore
+
+  gl:
+    name: gl
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Install GL dependencies
+        shell: bash
+        run: bash ci/install-gl-deps.sh
+
+      - name: Integration tests under Xvfb
+        shell: bash
+        run: bash ci/integration-test.sh
+
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gl-reports
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          retention-days: 7
+          if-no-files-found: ignore
+
+  pty:
+    name: pty (${{ matrix.os }})
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Platform integration tests (PTY / ConPTY)
+        shell: bash
+        run: bash ci/integration-test.sh
+
+      - name: Upload failure reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pty-reports-${{ matrix.os }}
+          path: |
+            **/build/reports/**
+            **/build/test-results/**
+          retention-days: 7
+          if-no-files-found: ignore
