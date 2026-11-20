@@ -7,8 +7,8 @@ internal modules.
 ## Artifacts
 
 CI runs the unit, GL, PTY, and integration tests on every push and pull
-request. Distribution archives are built and uploaded only for tags matching
-`v*`.
+request. For tags matching `v*`, the release job creates the forge release and
+attaches the distribution archives plus `SHA256SUMS`.
 
 | Host | Archive |
 |---|---|
@@ -36,7 +36,7 @@ Each archive contains:
 2. Confirm `CHANGELOG.md` has the release section.
 3. Run `./gradlew build` and `bash ci/integration-test.sh` on the target host.
 4. Confirm the GitHub Actions build, GL, and PTY jobs are green.
-5. Download the distribution artifacts from the CI run.
+5. Confirm the release job publishes the archives to the release page.
 
 ## Prepare
 
@@ -72,10 +72,14 @@ it must also contain `-XstartOnFirstThread`.
 
 1. Push the release branch and the signed `v<version>` tag only after the
    release commit is final.
-2. Create the forge release.
-3. Attach every platform `.zip` and `.tar`.
-4. Attach `SHA256SUMS` generated from the archives.
-5. Link the release from `README.md` or the repository release page.
+2. The tag run creates the forge release and uploads every platform `.zip`,
+   `.tar`, and `SHA256SUMS`.
+3. Verify the release page lists the expected host archives and checksum file.
+4. Link the release from `README.md` or the repository release page.
+
+A tag cut before the release job existed does not retroactively run it.
+Publish that tag manually from its CI artifacts, or cut the next tag from a
+commit that contains the release job.
 
 There is no Maven Central upload, artifact-signing key, or Central Portal
 token in CI. Release commits and tags are signed locally by the release

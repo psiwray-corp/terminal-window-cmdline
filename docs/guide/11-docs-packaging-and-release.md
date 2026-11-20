@@ -49,7 +49,7 @@ Adapt artifact names, package roots, module list, and distribution strategy.
    `--enable-native-access=ALL-UNNAMED`, `-Djava.awt.headless=true`, and
    `-XstartOnFirstThread` on macOS.
 6. Keep `:vt`/`:pty` internal and publish no Maven artifacts. Configure CI to
-   upload the platform application distributions.
+   create the forge release and attach the platform application distributions.
 7. Keep native-image out of v1; link `docs/roadmap.md`.
 8. Run a fresh-clone build and the README quickstart.
 9. Update `GUIDE.md` progress and all section checkboxes.
@@ -64,7 +64,8 @@ Adapt artifact names, package roots, module list, and distribution strategy.
 - [x] The application distribution runs with the documented native/LWJGL
       setup.
 - [x] macOS launcher includes `-XstartOnFirstThread`.
-- [x] CI uploads one application distribution per build host on `v*` tags.
+- [x] CI creates one forge release on `v*` tags with one application
+      distribution per build host and `SHA256SUMS`.
 - [x] The docs state that v1 has no scrollback, selection, images, or
       native-image.
 - [x] `docs/vt-support.md`, `docs/compatibility.md`, and `docs/roadmap.md` are
@@ -88,5 +89,6 @@ Adapt artifact names, package roots, module list, and distribution strategy.
 
 > Plan section 11 only: finalize README/CHANGELOG/CONTRIBUTING/docs, build
 > platform application distributions with host LWJGL natives and JVM flags,
-> upload them from CI, and document the standalone release. No Maven Central.
+> publish them from CI as forge release assets, and document the standalone
+> release. No Maven Central.
 > Native-image deferred.

@@ -133,3 +133,37 @@ jobs:
             **/build/test-results/**
           retention-days: 7
           if-no-files-found: ignore
+
+  release:
+    name: release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, gl, pty]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Download application distributions
+        uses: actions/download-artifact@v8
+        with:
+          pattern: terminal-window-cmdline-*
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd dist
+          sha256sum *.zip *.tar > SHA256SUMS
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: terminal-window-cmdline ${{ github.ref_name }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.zip
+            dist/*.tar
+            dist/SHA256SUMS

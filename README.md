@@ -36,16 +36,17 @@ distribution with the host LWJGL natives and launcher.
 
 ## Download
 
-CI runs tests on every push and pull request. Release-tag (`v*`) runs upload
-one distribution per build host:
+CI runs tests on every push and pull request. A release-tag (`v*`) run builds
+one distribution per build host, creates the forge release, and attaches:
 
 ```text
 terminal-window-cmdline-<os>-<arch>-<version>.zip
 terminal-window-cmdline-<os>-<arch>-<version>.tar
+SHA256SUMS
 ```
 
-Download the artifact for your platform from the GitHub Actions run, unpack it,
-and keep the JDK 25 `java` executable on `PATH`.
+Download the archive for your platform from the repository release page,
+unpack it, and keep the JDK 25 `java` executable on `PATH`.
 
 ## Run
 
