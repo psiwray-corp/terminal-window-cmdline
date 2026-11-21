@@ -14,7 +14,6 @@ concurrency:
 jobs:
   build:
     name: build (${{ matrix.os }})
-    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -63,7 +62,6 @@ jobs:
   gl:
     name: gl
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -98,7 +96,6 @@ jobs:
 
   pty:
     name: pty (${{ matrix.os }})
-    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
